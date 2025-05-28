@@ -6,6 +6,7 @@ import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import { auth } from "./firebase/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 
+
 function App() {
   const [authUser] = useAuthState(auth); // Get the authenticated user from the store
   return (

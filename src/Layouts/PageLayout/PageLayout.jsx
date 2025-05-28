@@ -5,6 +5,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import Navbar from "../../component/Navbar/Navbar";
 import { auth } from "../../firebase/firebase";
 
+
 // instead of adding the sidebar component to every page, we can add it only once to the PageLaout component ad wrap the childern with it. This way, we can have a sidebar on every page except the AuthPage without having to add it to every page individually. This is a good way to keep the code DRY (Don't Repeat Yourself) and make it easier to maintain.
 
 const PageLayout = ({children}) => {
@@ -21,6 +22,7 @@ const PageLayout = ({children}) => {
     <Flex flexDirection={canRenderNavbar ? "column" : "row"}>
       {/* sidebar on the left of the page */}
       {canRenderSidebar ? (
+
       <Box w={{base: "70px", md: "240px"}}>
         <Sidebar />
       </Box>
@@ -34,6 +36,7 @@ const PageLayout = ({children}) => {
   )
 };
 
+
 export default PageLayout;
 
 const PageLayoutSpinner = () => {
@@ -43,3 +46,4 @@ const PageLayoutSpinner = () => {
     </Flex>
   )
 }
+

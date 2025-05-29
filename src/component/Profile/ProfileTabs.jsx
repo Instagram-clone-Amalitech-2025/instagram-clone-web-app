@@ -32,4 +32,4 @@ const ProfileTabs = () => {
   )
 }
 
-export default ProfileTabs
+export default ProfileTabs;

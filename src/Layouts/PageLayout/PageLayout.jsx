@@ -15,7 +15,7 @@ const PageLayout = ({children}) => {
   const canRenderNavbar = !user && !loadiing && pathname !== '/auth';
   
   const checkingUserIsAuth = !user && loadiing
-  if(checkingUserIsAuth) return <PageLayoutSpinner />
+  if(checkingUserIsAuth) return <PageLayoutSpinner />;
 
   return (
     

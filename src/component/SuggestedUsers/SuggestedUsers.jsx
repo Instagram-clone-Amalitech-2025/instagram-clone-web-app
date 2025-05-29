@@ -1,33 +1,41 @@
 import { Box, Flex, Link, Text, VStack } from "@chakra-ui/react";
 import SuggestedHeader from "./SuggestedHeader";
 import SuggestedUser from "./SuggestedUser";
+import useGetSuggestedUsers from "../../hooks/useGetSuggestedUsers";
 
 const SuggestedUsers = () => {
-  return (
-    <VStack py={8} px={6} gap={4}>
-      <SuggestedHeader />
+	const { isLoading, suggestedUsers } = useGetSuggestedUsers();
 
-      <Flex alignItems={"center"} justifyContent={"space-between"} w={"full"}>
-      <Text fontSize={12} fontWeight={"bold"} color={"gray.500"}> 
-        Suggested for you
-      </Text>
-      <Text fontSize={12} fontWeight={"bold"} _hover={{color: "gray.400"}} cursor={"pointer"}>
-        See All
-      </Text>
-      </Flex>
+	// optional: render loading skeleton
+	if (isLoading) return null;
 
-      <SuggestedUser name="George Nkansah" followers={2499} avatar="https://bit.ly/ryan-florence"/>
-      <SuggestedUser name="Kingsley Book" followers={5666} avatar="https://bit.ly/ryan-florence"/>
-      <SuggestedUser name="Vincent Push" followers={300} avatar="https://bit.ly/code-beast"/>
+	return (
+		<VStack py={8} px={6} gap={4}>
+			<SuggestedHeader />
 
-      <Box fontSize={12} color={"gray.500"} mt={5} textAlign={"start"}>
-        © 2023 Built by{" "}
-        <Link href="https://alpha-eagle2.github.io/"  target="_blank" color="blue.500" fontSize={14}>
-        As a front-end developer
-        </Link>
-      </Box>
-    </VStack>
-  )
-}
+			{suggestedUsers.length !== 0 && (
+				<Flex alignItems={"center"} justifyContent={"space-between"} w={"full"}>
+					<Text fontSize={12} fontWeight={"bold"} color={"gray.500"}>
+						Suggested for you
+					</Text>
+					<Text fontSize={12} fontWeight={"bold"} _hover={{ color: "gray.400" }} cursor={"pointer"}>
+						See All
+					</Text>
+				</Flex>
+			)}
+
+			{suggestedUsers.map((user) => (
+				<SuggestedUser user={user} key={user.id} />
+			))}
+
+			<Box fontSize={12} color={"gray.500"} mt={5} alignSelf={"start"}>
+				© 2023 Built By{" "}
+				<Link href='https://github.com/Instagram-clone-Amalitech-2025/instagram-clone-web-app' target='_blank' color='blue.500' fontSize={14}>
+					Raymond and Team insta-clone
+				</Link>
+			</Box>
+		</VStack>
+	);
+};
 
 export default SuggestedUsers;

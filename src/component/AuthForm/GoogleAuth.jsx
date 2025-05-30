@@ -1,92 +1,61 @@
-import { Button, useToast } from "@chakra-ui/react";
-import { FcGoogle } from "react-icons/fc";
+import { Flex, Image, Text } from "@chakra-ui/react";
+import { useSignInWithGoogle } from "react-firebase-hooks/auth";
 import { auth, firestore } from "../../firebase/firebase";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import useShowToast from "../../hooks/useShowToast";
 import useAuthStore from "../../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
-const GoogleAuth = ({ prefix = "Log in" }) => {
-  const loginUser = useAuthStore((state) => state.login);
-  const toast = useToast();
-  const navigate = useNavigate();
+const GoogleAuth = ({ prefix }) => {
+	const [signInWithGoogle, , , error] = useSignInWithGoogle(auth);
+	const showToast = useShowToast();
+	const loginUser = useAuthStore((state) => state.login);
 
-  const handleGoogleAuth = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+	const handleGoogleAuth = async () => {
+		try {
+			const newUser = await signInWithGoogle();
+			if (!newUser && error) {
+				showToast("Error", error.message, "error");
+				return;
+			}
+			const userRef = doc(firestore, "users", newUser.user.uid);
+			const userSnap = await getDoc(userRef);
 
-      // Check if user exists in Firestore
-      const userRef = doc(firestore, "users", user.uid);
-      const userSnap = await getDoc(userRef);
+			if (userSnap.exists()) {
+				// login
+				const userDoc = userSnap.data();
+				localStorage.setItem("user-info", JSON.stringify(userDoc));
+				loginUser(userDoc);
+			} else {
+				// signup
+				const userDoc = {
+					uid: newUser.user.uid,
+					email: newUser.user.email,
+					username: newUser.user.email.split("@")[0],
+					fullName: newUser.user.displayName,
+					bio: "",
+					profilePicURL: newUser.user.photoURL,
+					followers: [],
+					following: [],
+					posts: [],
+					createdAt: Date.now(),
+				};
+				await setDoc(doc(firestore, "users", newUser.user.uid), userDoc);
+				localStorage.setItem("user-info", JSON.stringify(userDoc));
+				loginUser(userDoc);
+			}
+		} catch (error) {
+			showToast("Error", error.message, "error");
+		}
+	};
 
-      if (!userSnap.exists()) {
-        // New user, create document
-        const userDoc = {
-          uid: user.uid,
-          email: user.email,
-          username: user.displayName?.replace(/\s+/g, "").toLowerCase(),
-          fullName: user.displayName || "",
-          bio: "",
-          profilePicURL: user.photoURL || "",
-          followers: [],
-          following: [],
-          posts: [],
-          createdAt: Date.now(),
-        };
-        await setDoc(userRef, userDoc);
-        localStorage.setItem("user-info", JSON.stringify(userDoc));
-        loginUser(userDoc);
-        toast({
-          title: "Account created successfully!",
-          description: "You have signed up with Google. Please log in.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        // Redirect to login page or switch form if needed
-        navigate("/auth");
-      } else {
-        // Existing user, log in
-        const userDoc = userSnap.data();
-        localStorage.setItem("user-info", JSON.stringify(userDoc));
-        loginUser(userDoc);
-        toast({
-          title: "Login successful!",
-          description: "You have logged in with Google.",
-          status: "success",
-          duration: 3000,
-          isClosable: true,
-          position: "top-right",
-        });
-        navigate("/home");
-      }
-    } catch (error) {
-      toast({
-        title: "Google Auth Error",
-        description: error.message,
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-        position: "top-right",
-      });
-    }
-  };
-
-  return (
-    <Button
-      w={"full"}
-      colorScheme="gray"
-      leftIcon={<FcGoogle />}
-      onClick={handleGoogleAuth}
-      variant="outline"
-      fontWeight="medium"
-    >
-      {prefix} with Google
-    </Button>
-  );
+	return (
+		<Flex alignItems={"center"} justifyContent={"center"} cursor={"pointer"} onClick={handleGoogleAuth}>
+			<Image src='/google.png' w={5} alt='Google logo' />
+			<Text mx='2' color={"blue.500"}>
+				{prefix} with Google
+			</Text>
+		</Flex>
+	);
 };
 
 export default GoogleAuth;
